@@ -10,7 +10,12 @@
     <l-marker 
       v-for="marker in markers"
       :key="marker.id"
-      :lat-lng="marker.coordinates">
+      :lat-lng="marker.coordinates"
+      @mouseover="openPopup"
+      @mouseout="closePopup">
+      <l-popup ref="popup">
+        {{ marker.count }}
+      </l-popup>
     </l-marker>
     <l-tile-layer
       :url="url"
@@ -23,6 +28,16 @@
 import { LMap, LTileLayer, LMarker } from 'vue2-leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// Fix for broken marker icons
+import L from 'leaflet';
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
 export default {
   components: {
     LMap,
@@ -32,8 +47,8 @@ export default {
   data () {
     return {
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      center: [ 49.1193089, 6.1757156 ],
-      zoom: 12,
+      center: [55.8642, -3.7079],
+      zoom: 10,
       markers: []
     }
   },
@@ -44,6 +59,12 @@ export default {
     },
     centerUpdated (center) {
       this.center = center;
+    },
+    openPopup() {
+      this.$refs.popup.openPopup();
+    },
+    closePopup() {
+      this.$refs.popup.closePopup();
     }
   },
   created() {
@@ -52,7 +73,8 @@ export default {
       .then(data => {
         this.markers = data.map(item => ({
           id: item.usmart_id,
-          coordinates: [item.latitude, item.longitude]
+          coordinates: [item.latitude, item.longitude],
+          count: item.count
         }));
       });
   }
