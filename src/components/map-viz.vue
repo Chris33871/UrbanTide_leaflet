@@ -7,26 +7,28 @@
     @update:zoom="zoomUpdated"
     @update:center="centerUpdated"
   >
-    <l-marker 
-      v-for="marker in markers"
-      :key="marker.id"
-      :lat-lng="marker.coordinates"
-      @mouseover="openPopup"
-      @mouseout="closePopup">
-      <l-popup ref="popup">
-        {{ marker.count }}
-      </l-popup>
-    </l-marker>
+  <l-marker 
+    v-for="marker in markers"
+    :key="marker.id"
+    :lat-lng="marker.coordinates"
+    :ref="marker.id"
+    @click="openModal(marker.id)">
+    <l-popup>
+      {{ marker.count }}
+    </l-popup>
+  </l-marker>
     <l-tile-layer
       :url="url"
     >
     </l-tile-layer>
+    <modal-component ref="modal"></modal-component>
   </l-map>
 </template>
 
 <script>
-import { LMap, LTileLayer, LMarker } from 'vue2-leaflet';
+import { LMap, LTileLayer, LMarker, LPopup } from 'vue2-leaflet';
 import 'leaflet/dist/leaflet.css';
+import ModalComponent from './time-series.vue';
 
 // Fix for broken marker icons
 import L from 'leaflet';
@@ -42,7 +44,9 @@ export default {
   components: {
     LMap,
     LTileLayer,
-    LMarker
+    LMarker,
+    LPopup,
+    ModalComponent,
   },
   data () {
     return {
@@ -60,12 +64,10 @@ export default {
     centerUpdated (center) {
       this.center = center;
     },
-    openPopup() {
-      this.$refs.popup.openPopup();
+    openModal() {
+      // console.log("Open popup", this.$refs[id][0].$vnode.componentOptions.propsData.latLng.__ob__.vmCount)
+      this.$refs.modal.openModal();
     },
-    closePopup() {
-      this.$refs.popup.closePopup();
-    }
   },
   created() {
     fetch('https://api.usmart.io/org/d1b773fa-d2bd-4830-b399-ecfd18e832f3/657f6f93-932b-4851-ae21-830b321c185d/latest/urql')
